@@ -1,0 +1,17 @@
+[project]
+name = "orbyte"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["jinja2>=3.1"]
+
+[project.scripts]
+orbyte = "orbyte:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["orbyte"]
