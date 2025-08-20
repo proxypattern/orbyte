@@ -1,96 +1,294 @@
 # Orbyte
 
-A lightweight Python library and CLI for managing AI prompt templates with Jinja2, i18n fallback, and simple filesystem conventions.
+Filesystem-first prompt templating with locale fallback, powered by **Jinja2**.
 
-## Features
+* Simple file layout: `identifier[.locale].j2`
+* Locale fallback: `identifier.<locale>.j2 → identifier.<default_locale>.j2 → identifier.j2`
+* Strict rendering (fail fast on missing vars via `StrictUndefined`)
+* Works as both **CLI** and **library package**
 
-*   **Template Rendering:** Uses Jinja2 for powerful and flexible templating.
-*   **I18n Integration:** Supports locale fallback for internationalization.
-*   **Directory Structure:** Follows a simple and organized directory structure for your prompts.
-*   **CLI:** Includes a command-line interface for testing and rendering prompts.
 
 ## Installation
 
-1.  Clone the repository:
-
-    ```bash
-    git clone https://github.com/wilburhimself/orbyte.git
-    cd orbyte
-    ```
-
-2.  Create a virtual environment and install the dependencies:
-
-    ```bash
-    uv venv
-    uv pip install -e .
-    ```
-
-Alternatively (once published on PyPI):
+**Local dev (editable):**
 
 ```bash
-pip install orbyte
+pip install -e .[dev]
 ```
 
-## Usage
+**From GitHub (no publish needed):**
 
-### As a Library
+```bash
+pip install "git+https://github.com/proxypattern/orbyte@main#egg=orbyte"
+# with extras:
+pip install "git+https://github.com/proxypattern/orbyte@main#egg=orbyte[i18n,cache]"
+```
 
-To use Orbyte as a library, import `Orbyte` and point it at your prompts folder. You can set the path via constructor, environment variable, or CLI option.
+**From PyPI (after release):**
+
+```bash
+pip install "orbyte[i18n,cache]"
+```
+
+Extras:
+
+* `i18n` → Babel (gettext)
+* `cache` → diskcache (optional, if you add persistent caching)
+
+
+## Quick start (CLI)
+
+```bash
+# render a template
+orbyte render greeting --vars '{"name":"Ada"}' --prompts-path examples/prompts
+orbyte render greeting --locale es --vars '{"name":"Ada"}' --prompts-path examples/prompts
+
+# list identifiers (base names without locale suffix)
+orbyte list --prompts-path examples/prompts
+
+# explain fallback chain
+orbyte explain greeting --locale fr --prompts-path examples/prompts
+```
+
+You can also run via module:
+
+```bash
+python -m orbyte render greeting --vars '{"name":"Ada"}' --prompts-path examples/prompts
+# or (shorthand) default to "render" when first arg isn't a subcommand:
+python -m orbyte greeting --vars '{"name":"Ada"}' --prompts-path examples/prompts
+```
+
+Environment variable:
+
+* `ORBYTE_PROMPTS_PATH="path1:path2"` is used when `--prompts-path` is not provided.
+
+
+## Quick start (Library)
 
 ```python
-from orbyte import Orbyte
+# app/prompts/greeting.j2:  "Hello {{ name }}!"
+from orbyte.core import Orbyte
 
-# Option A: pass the prompts path explicitly
-ob = Orbyte(prompts_path="/absolute/path/to/prompts")
-
-# Option B: rely on ORBYTE_PROMPTS_PATH (takes effect if constructor arg is omitted)
-#   export ORBYTE_PROMPTS_PATH=/absolute/path/to/prompts
-#   ob = Orbyte()
-
-prompt = ob.render(
-    "user_onboarding/welcome_email",
-    locale="es",
-    name="María García",
-    app_name="ProjectHub",
-    user_role="Team Lead",
-    features=["Create projects", "Invite team members", "Track progress", "Generate reports"],
-    days_since_signup=2
+ob = Orbyte(
+    prompts_paths=["app/prompts"],
+    default_locale="en",
 )
 
-print(prompt)
+print(ob.render("greeting", {"name": "Ada"}))
+# -> "Hello Ada!"
 ```
 
-### Command-Line Interface
+Pass variables as kwargs too:
 
-You can also use the command-line interface to render prompts:
+```python
+ob.render("greeting", locale="en", name="Ada")
+```
+
+## File layout & fallback
+
+```
+examples/prompts/
+├── greeting.j2
+├── greeting.en.j2
+└── greeting.es.j2
+```
+
+Resolution order:
+
+1. `identifier.<locale>.j2`
+2. `identifier.<default_locale>.j2`
+3. `identifier.j2`
+
+
+## Validation & Errors
+
+* **Identifiers**: must be relative names (no absolute paths / `..` / trailing `.j2`).
+* **Locales**: basic `en` / `en-US` pattern; underscores normalized to hyphens.
+* **Prompts paths**: must exist and be directories.
+* **Variables**: must be a mapping; missing variables raise `MissingVariableError`.
+* **Template not found**: raises `TemplateLookupError` and shows all candidates tried.
+* **`--vars` JSON**: provide a JSON string or `@file.json` path. Bad input triggers a helpful “Invalid JSON” error.
+
+## CLI options (high-level)
+
+* `--prompts-path` (repeatable): one or more directories to search.
+* `--default-locale`: fallback default (default: `en`).
+* `--locale`: desired locale for this render (`en`, `es`, `en-US`, …).
+* `--vars`: JSON string or `@file.json`.
+* `--filters`: Python file exporting `FILTERS` dict or `get_filters()` → dict.
+* `--gettext-dir`: base directory for gettext `.mo` files (Babel).
+* `--sandbox`: render with Jinja’s `SandboxedEnvironment`.
+* `--bytecode-cache-dir`: directory for Jinja bytecode cache.
+
+Examples:
 
 ```bash
-# Option A: pass prompts path explicitly
-.venv/bin/orbyte user_onboarding/welcome_email \
-  --prompts-path /absolute/path/to/prompts \
-  --locale es \
-  --vars '{"name": "Wilbur", "app_name": "Orbyte", "user_role": "Admin", "features": ["A", "B"], "days_since_signup": 1}'
+# multiple prompt paths
+orbyte list --prompts-path app/prompts --prompts-path team/prompts
 
-# Option B: use environment variable
-export ORBYTE_PROMPTS_PATH=/absolute/path/to/prompts
-.venv/bin/orbyte user_onboarding/welcome_email --locale es --vars '{"name": "Wilbur"}'
+# sandbox + bytecode cache
+orbyte render email_welcome --vars '{"name":"Ada"}' \
+  --prompts-path app/prompts \
+  --sandbox \
+  --bytecode-cache-dir .cache/jinja
+
+# gettext i18n
+orbyte render email_welcome --locale fr \
+  --prompts-path app/prompts \
+  --gettext-dir locale
 ```
 
-## Directory Structure
+## Custom Filters
 
-Orbyte expects your prompts to be organized in the following directory structure:
+Register filters at runtime via CLI or programmatically.
+
+**CLI (recommended)** — `scripts/filters.py`
+
+```python
+def shout(value: str) -> str:
+    return str(value).upper() + "!"
+
+def surround(value: str, left: str = "[", right: str = "]") -> str:
+    return f"{left}{value}{right}"
+
+FILTERS = {"shout": shout, "surround": surround}
+```
+
+Use it:
+
+```bash
+orbyte render greeting \
+  --vars '{"name":"Ada"}' \
+  --prompts-path examples/prompts \
+  --filters scripts/filters.py
+```
+
+Alternatively export a factory:
+
+```python
+# scripts/filters_factory.py
+def get_filters():
+    def reverse(value: str) -> str:
+        return str(value)[::-1]
+    return {"reverse": reverse}
+```
+
+**Library**
+
+```python
+from orbyte.core import Orbyte
+ob = Orbyte(["examples/prompts"], extra_filters={"shout": lambda s: str(s).upper()+"!"})
+print(ob.render("greeting", {"name": "Ada"}))  # can use {{ name|shout }} in template
+```
+
+## Gettext / Babel (optional)
+
+Enable `{% trans %}` in templates by loading translations. Directory layout:
 
 ```
-prompts/
-├── user_onboarding/
-│   ├── welcome_email.en.j2
-│   └── welcome_email.es.j2
-└── another_prompt.j2
+locale/
+ └─ fr/
+    └─ LC_MESSAGES/
+       └─ messages.mo
 ```
 
-When you call `render("user_onboarding/welcome_email")`, Orbyte will look for the following files in order:
+**CLI**
 
-1.  `user_onboarding/welcome_email.<locale>.j2` (e.g., `user_onboarding/welcome_email.es.j2`)
-2.  `user_onboarding/welcome_email.<default_locale>.j2` (e.g., `user_onboarding/welcome_email.en.j2`)
-3.  `user_onboarding/welcome_email.j2`
+```bash
+orbyte render email_welcome --locale fr \
+  --prompts-path app/prompts \
+  --gettext-dir locale
+```
 
+**Library**
+
+```python
+from babel.support import Translations
+from orbyte.core import Orbyte
+
+translations = Translations.load("locale", ["fr"])
+ob = Orbyte(["app/prompts"], default_locale="en", translations=translations)
+```
+
+## Sandbox & Bytecode Cache (optional)
+
+```python
+ob = Orbyte(
+    ["app/prompts"],
+    sandbox=True,                    # SandboxedEnvironment for untrusted templates
+    bytecode_cache_dir=".cache/jinja"  # faster loads in production
+)
+```
+
+## Using prompts bundled inside your package
+
+Ship prompts inside your wheel and resolve a filesystem path with `importlib.resources`:
+
+```python
+from importlib.resources import files, as_file
+from orbyte.core import Orbyte
+
+prompts_resource = files("myapp") / "prompts"
+with as_file(prompts_resource) as p:
+    ob = Orbyte([str(p)], default_locale="en")
+    print(ob.render("greeting", {"name": "Ada"}))
+```
+
+> Ensure your package includes the files (e.g., via your build backend’s include settings).
+
+
+## Nox (local dev task runner)
+
+We include a `noxfile.py` so you can run tests, lint, types, and builds in isolated virtualenvs.
+
+Common commands:
+
+```bash
+# run tests on all configured Python versions
+nox -s tests
+
+# run tests only on Python 3.12 and pass extra args to pytest
+nox -s tests-3.12 -- -q -k cli
+
+# ruff lint and format
+nox -s lint
+nox -s format
+
+# mypy type-checks
+nox -s types
+
+# build sdist + wheel
+nox -s build
+```
+
+> Install nox once with `pipx install nox` (or `pip install nox`).
+> If you don’t have all interpreters locally, run a specific session like `nox -s tests-3.12`.
+
+
+## Development
+
+```bash
+# clone
+git clone https://github.com/proxypattern/orbyte
+cd orbyte
+
+# install
+pip install -e .[dev]
+
+# quality gate
+ruff check .
+mypy src tests
+pytest -q
+```
+
+## CI & Release (GitHub Actions)
+
+* **CI**: lint, mypy, pytest across Python 3.9–3.12.
+* **Release**: tag `v*` builds wheels and publishes to PyPI via **Trusted Publishing**.
+
+Tagging a release:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
