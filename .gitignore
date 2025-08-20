@@ -1,10 +1,65 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
-
 # Virtual environments
 .venv
+
+# --- Python cache/bytecode ---
+__pycache__/
+*.py[cod]
+*.py[oc]
+*$py.class
+
+# --- Environments ---
+.venv/
+venv/
+ENV/
+env/
+.env
+.env.*
+.python-version
+
+# --- Build & packaging (PEP 517/518) ---
+build/
+dist/
+pip-wheel-metadata/
+wheels/
+*.egg-info/
+.eggs/
+*.egg
+MANIFEST
+
+# --- Test / coverage ---
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# --- Type checkers / linters ---
+.mypy_cache/
+.ruff_cache/
+
+# --- Task runners ---
+.nox/
+.tox/
+
+# --- Caches ---
+.cache/
+# if you prefer to track other caches but ignore jinja specifically:
+# .cache/jinja/
+
+# --- IDEs / editors ---
+.vscode/
+.idea/
+*.code-workspace
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
+
+# --- Docs (mkdocs build) ---
+site/
+
+# --- Misc ---
+*.swp
+*.swo

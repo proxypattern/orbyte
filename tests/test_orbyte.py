@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from orbyte import Orbyte
+from orbyte.exceptions import TemplateLookupError
 
 
 def write_template(base: Path, identifier: str, content: str, locale: str | None = None):
@@ -25,36 +26,40 @@ def test_render_with_specific_locale(tmp_prompts_dir: Path):
     write_template(tmp_prompts_dir, "welcome_email", "Hola {{ name }}", locale="es")
     write_template(tmp_prompts_dir, "welcome_email", "Hello {{ name }}", locale="en")
 
-    ob = Orbyte(prompts_path=str(tmp_prompts_dir), default_locale="en")
+    ob = Orbyte([str(tmp_prompts_dir)], default_locale="en")
 
-    es = ob.render("welcome_email", locale="es", name="Wilbur")
-    en = ob.render("welcome_email", locale="en", name="Wilbur")
+    es = ob.render("welcome_email", variables={"name": "Wilbur"}, locale="es")
+    en = ob.render("welcome_email", variables={"name": "Wilbur"}, locale="en")
 
     assert es == "Hola Wilbur"
     assert en == "Hello Wilbur"
 
 
-def test_render_falls_back_to_default_locale_when_requested_missing(tmp_prompts_dir: Path):
+def test_render_falls_back_to_default_locale_when_requested_missing(
+    tmp_prompts_dir: Path,
+):
     write_template(tmp_prompts_dir, "welcome_email", "Hello {{ name }}", locale="en")
 
-    ob = Orbyte(prompts_path=str(tmp_prompts_dir), default_locale="en")
+    ob = Orbyte([str(tmp_prompts_dir)], default_locale="en")
 
-    result = ob.render("welcome_email", locale="fr", name="Wilbur")
+    result = ob.render("welcome_email", variables={"name": "Wilbur"}, locale="fr")
     assert result == "Hello Wilbur"
 
 
-def test_render_falls_back_to_plain_identifier_when_no_locale_found(tmp_prompts_dir: Path):
+def test_render_falls_back_to_plain_identifier_when_no_locale_found(
+    tmp_prompts_dir: Path,
+):
     write_template(tmp_prompts_dir, "welcome_email", "Howdy {{ name }}")
 
-    ob = Orbyte(prompts_path=str(tmp_prompts_dir), default_locale="en")
+    ob = Orbyte([str(tmp_prompts_dir)], default_locale="en")
 
-    result = ob.render("welcome_email", locale="fr", name="Wilbur")
+    result = ob.render("welcome_email", variables={"name": "Wilbur"}, locale="fr")
     assert result == "Howdy Wilbur"
 
 
 def test_render_raises_when_no_matching_template(tmp_prompts_dir: Path):
-    ob = Orbyte(prompts_path=str(tmp_prompts_dir), default_locale="en")
-    with pytest.raises(FileNotFoundError):
+    ob = Orbyte([str(tmp_prompts_dir)], default_locale="en")
+    with pytest.raises(TemplateLookupError):
         ob.render("missing_identifier", locale="en")
 
 
@@ -106,7 +111,9 @@ def test_cli_errors_on_invalid_json(tmp_path: Path, tmp_prompts_dir: Path):
     assert "Invalid JSON" in (out.stdout + out.stderr)
 
 
-def test_cli_uses_env_prompts_path_when_flag_not_provided(tmp_path: Path, tmp_prompts_dir: Path, monkeypatch: pytest.MonkeyPatch):
+def test_cli_uses_env_prompts_path_when_flag_not_provided(
+    tmp_path: Path, tmp_prompts_dir: Path, monkeypatch: pytest.MonkeyPatch
+):
     write_template(tmp_prompts_dir, "welcome_email", "Hello {{ name }}", locale="en")
 
     env = os.environ.copy()
