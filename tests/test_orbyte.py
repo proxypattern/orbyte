@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from orbyte import Orbyte
+from orbyte.exceptions import TemplateLookupError
 
 
 def write_template(base: Path, identifier: str, content: str, locale: str | None = None):
@@ -58,7 +59,7 @@ def test_render_falls_back_to_plain_identifier_when_no_locale_found(
 
 def test_render_raises_when_no_matching_template(tmp_prompts_dir: Path):
     ob = Orbyte([str(tmp_prompts_dir)], default_locale="en")
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(TemplateLookupError):
         ob.render("missing_identifier", locale="en")
 
 

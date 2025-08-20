@@ -9,7 +9,7 @@ class OrbyteConfigError(ValueError):
     """Raised when Orbyte is misconfigured (paths/locales/identifiers)."""
 
 
-_IDENTIFIER_RE = re.compile(r"^[\w\-/\.]+$")  # letters, digits, _, -, /, .
+_IDENTIFIER_RE = re.compile(r"^[\w/\.\-]+$")  # letters, digits, _, -, /, .
 _LOCALE_RE = re.compile(r"^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$")  # en, en-US, zh-Hant
 
 
