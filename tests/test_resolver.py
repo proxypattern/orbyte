@@ -172,24 +172,19 @@ def test_list_identifiers_various_templates(
 
 
 def test_list_identifiers_nested_structure(
-    resolver_single_path: PromptResolver, tmp_prompts_dir: Path
+    resolver_single_path, tmp_prompts_dir, write_template
 ):
-    # Create nested structure
     emails_dir = tmp_prompts_dir / "emails"
-    emails_dir.mkdir()
     write_template(emails_dir, "welcome", "Welcome email")
     write_template(emails_dir, "goodbye", "Goodbye email", locale="en")
 
     notifications_dir = tmp_prompts_dir / "notifications"
-    notifications_dir.mkdir()
     write_template(notifications_dir, "alert", "Alert!")
 
     identifiers = resolver_single_path.list_identifiers()
-
-    # The current implementation only looks at filenames, not full paths
-    assert "welcome" in identifiers
-    assert "goodbye" in identifiers
-    assert "alert" in identifiers
+    assert "emails/welcome" in identifiers
+    assert "emails/goodbye" in identifiers
+    assert "notifications/alert" in identifiers
 
 
 def test_list_identifiers_multi_path(resolver_multi_path, tmp_path: Path):
@@ -237,3 +232,26 @@ def test_resolver_with_different_default_locale():
     result = resolver.resolve("test", locale=None)
 
     assert result.locale == "es"
+
+
+def test_list_identifiers_recursive_vs_non_recursive(tmp_path: Path):
+    base = tmp_path / "prompts"
+    (base / "emails").mkdir(parents=True)
+    (base / "emails" / "welcome.en.j2").write_text("x", encoding="utf-8")
+    (base / "root.j2").write_text("y", encoding="utf-8")
+
+    r = PromptResolver([str(base)])
+    assert r.list_identifiers(recursive=False) == ["root"]
+    assert r.list_identifiers(recursive=True) == ["emails/welcome", "root"]
+
+
+def test_list_identifiers_non_recursive(
+    resolver_single_path: PromptResolver, tmp_prompts_dir: Path
+):
+    (tmp_prompts_dir / "root.en.j2").write_text("x", encoding="utf-8")
+    (tmp_prompts_dir / "nested").mkdir()
+    (tmp_prompts_dir / "nested" / "child.j2").write_text("y", encoding="utf-8")
+
+    # Only top-level identifiers
+    identifiers = resolver_single_path.list_identifiers(recursive=False)
+    assert identifiers == ["root"]

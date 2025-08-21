@@ -1,6 +1,7 @@
 # Orbyte
 
 [![CI](https://github.com/proxypattern/orbyte/actions/workflows/ci.yml/badge.svg)](https://github.com/proxypattern/orbyte/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/proxypattern/orbyte/branch/main/graph/badge.svg)](https://codecov.io/gh/proxypattern/orbyte)
 
 Filesystem-first prompt templating with locale fallback, powered by **Jinja2**.
 

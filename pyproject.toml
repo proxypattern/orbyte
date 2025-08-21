@@ -20,11 +20,61 @@ where = ["src"]
 [tool.setuptools]
 py-modules = ["orbyte"]
 
-# Pytest configuration
+# Pytest + Coverage settings
 [tool.pytest.ini_options]
-addopts = "-q"
 testpaths = ["tests"]
 python_files = "test_*.py"
+addopts = [
+  "-q",
+  "--cov=orbyte",
+  "--cov=orbyte.py",
+  "--cov-report=term-missing:skip-covered",
+  "--cov-report=xml",
+  "--cov-report=html"
+]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["orbyte"]
+omit = [
+  "src/**/__init__.py",
+  "src/**/__main__.py",
+  "tests/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 90
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+  "def __repr__",
+  "if __name__ == .__main__.:",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# --- Ruff configuration ---
+[tool.ruff]
+line-length = 90
+target-version = "py39"
+extend-exclude = [
+  ".git", ".venv", "venv", ".nox", ".tox",
+  "dist", "build", "htmlcov", "__pycache__"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+docstring-code-format = true
 
 [dependency-groups]
 dev = [
@@ -34,6 +84,7 @@ dev = [
   "ruff>=0.5.0",
   "nox>=2024.4.15",
   "types-click",
+  "types-babel",
 ]
 
 [project.optional-dependencies]
