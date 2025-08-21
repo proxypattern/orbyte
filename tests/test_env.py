@@ -39,6 +39,9 @@ def test_sandbox_environment_when_available(tmp_path: Path):
     SandboxedEnvironment = getattr(env_mod, "SandboxedEnvironment", None)
     if SandboxedEnvironment is None:
         pytest.skip("SandboxedEnvironment not available")
+
+    assert isinstance(SandboxedEnvironment, type)
+
     e = create_env(str(tmp_path), sandbox=True)
     assert isinstance(e, SandboxedEnvironment)
 

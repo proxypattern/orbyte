@@ -7,9 +7,7 @@ attrs==25.3.0
 babel==2.17.0
     # via orbyte (pyproject.toml)
 click==8.2.1
-    # via
-    #   orbyte (pyproject.toml)
-    #   typer
+    # via typer
 colorlog==6.9.0
     # via nox
 coverage==7.10.4

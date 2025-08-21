@@ -13,13 +13,13 @@ Filesystem-first prompt templating with locale fallback, powered by **Jinja2**.
 
 ## Installation
 
-**Local dev (editable):**
+**Local dev:**
 
 ```bash
 pip install -e .[dev]
 ```
 
-**From GitHub (no publish needed):**
+**From GitHub:**
 
 ```bash
 pip install "git+https://github.com/proxypattern/orbyte@main#egg=orbyte"
@@ -27,7 +27,7 @@ pip install "git+https://github.com/proxypattern/orbyte@main#egg=orbyte"
 pip install "git+https://github.com/proxypattern/orbyte@main#egg=orbyte[i18n,cache]"
 ```
 
-**From PyPI (after release):**
+**From PyPI:**
 
 ```bash
 pip install "orbyte[i18n,cache]"
