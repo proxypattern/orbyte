@@ -71,8 +71,8 @@ jobs:
       - name: Run tests (pytest + coverage)
         shell: bash
         run: |
-          # Run pytest with minimal coverage reporting for CI
-          pytest --cov=src/orbyte --cov-report=
+          # Run pytest with minimal coverage reporting for CI (term report needed to generate .coverage file)
+          pytest --cov=src/orbyte --cov-report=term
           # Debug: show what coverage files were created
           echo "Coverage files after pytest:"
           ls -la .coverage* || echo "No .coverage* files found after pytest"
