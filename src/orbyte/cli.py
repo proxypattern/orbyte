@@ -40,9 +40,7 @@ def _load_filters(filters_path: Optional[str]) -> Optional[Dict[str, object]]:
     if "get_filters" in ns and callable(ns["get_filters"]):
         result = ns["get_filters"]()
         if not isinstance(result, dict):
-            raise OrbyteConfigError(
-                "get_filters() in filters module must return a dict."
-            )
+            raise OrbyteConfigError("get_filters() in filters module must return a dict.")
         return result
     raise OrbyteConfigError(
         "Filters file must define FILTERS dict or get_filters() -> dict."
@@ -92,6 +90,9 @@ def list_cmd(
         "--prompts-path",
         help="One or more paths to prompts directories (can repeat).",
     ),
+    recursive: bool = typer.Option(
+        True, "--recursive/--non-recursive", help="Recurse into subdirs"
+    ),
     default_locale: str = typer.Option(
         "en",
         "--default-locale",
@@ -121,15 +122,13 @@ def list_cmd(
     ob = _build_orbyte(
         paths, default_locale, None, sandbox, bytecode_cache_dir, filters, gettext_dir
     )
-    for ident in ob.list_identifiers():
+    for ident in ob.list_identifiers(recursive=recursive):
         typer.echo(ident)
 
 
 @app.command()
 def explain(
-    identifier: str = typer.Argument(
-        ..., help="Template identifier (e.g., 'greeting')"
-    ),
+    identifier: str = typer.Argument(..., help="Template identifier (e.g., 'greeting')"),
     locale: Optional[str] = typer.Option(None, help="Locale (e.g., 'en', 'es')"),
     prompts_path: List[str] = typer.Option(
         None,
@@ -171,9 +170,7 @@ def explain(
 
 @app.command()
 def render(
-    identifier: str = typer.Argument(
-        ..., help="Template identifier (e.g., 'greeting')"
-    ),
+    identifier: str = typer.Argument(..., help="Template identifier (e.g., 'greeting')"),
     vars: Optional[str] = typer.Option("{}", help="JSON string or @file.json"),
     locale: Optional[str] = typer.Option(None, help="Locale (e.g., 'en', 'es')"),
     prompts_path: List[str] = typer.Option(
