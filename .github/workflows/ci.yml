@@ -98,6 +98,14 @@ jobs:
           echo "Coverage files after renaming:"
           ls -la .coverage* || echo "No .coverage* files found after renaming"
 
+      - name: Debug before upload
+        run: |
+          echo "Current working directory: $(pwd)"
+          echo "Files matching .coverage.py${{ matrix.python-version }}:"
+          ls -la .coverage.py${{ matrix.python-version }} || echo "File not found!"
+          echo "All .coverage files:"
+          ls -la .coverage* || echo "No .coverage files found"
+
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
         with:
