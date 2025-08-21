@@ -78,7 +78,7 @@ def test_translations_install_and_apply(tmp_path: Path):
         def ngettext(self, s, p, n):
             return f"t:{s if n == 1 else p}"  # pragma: no cover
 
-    e = create_env(str(tmp_path), translations=DummyTranslations())
+    e = create_env(str(tmp_path), translations=DummyTranslations())  # type: ignore[arg-type]
     t1 = e.from_string("{% trans %}Hello{% endtrans %}")
     assert t1.render() == "t:Hello"
     t2 = e.from_string("{% trans count=2 %}item{% pluralize %}items{% endtrans %}")
