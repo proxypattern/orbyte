@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [{ name = "ProxyPattern" }]
-dependencies = ["jinja2>=3.1", "typer>=0.12.0", "click>=8.0"]
+dependencies = ["jinja2>=3.1", "typer>=0.12.0", "click>=8.1.0,<8.2"]
 
 [project.scripts]
 orbyte = "orbyte.cli:main"
@@ -17,14 +17,62 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools]
-py-modules = ["orbyte"]
+# Remove py-modules for src layout - packages.find handles this
 
-# Pytest configuration
+# Pytest + Coverage settings
 [tool.pytest.ini_options]
-addopts = "-q"
 testpaths = ["tests"]
 python_files = "test_*.py"
+addopts = [
+  "-q",
+  "--cov=src/orbyte",
+  "--cov-report=term-missing:skip-covered",
+  "--cov-report=xml",
+  "--cov-report=html"
+]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["src/orbyte"]
+omit = [
+  "src/**/__init__.py",
+  "src/**/__main__.py",
+  "tests/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 90
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+  "def __repr__",
+  "if __name__ == .__main__.:",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+# --- Ruff configuration ---
+[tool.ruff]
+line-length = 90
+target-version = "py39"
+extend-exclude = [
+  ".git", ".venv", "venv", ".nox", ".tox",
+  "dist", "build", "htmlcov", "__pycache__"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+docstring-code-format = true
 
 [dependency-groups]
 dev = [
@@ -34,6 +82,7 @@ dev = [
   "ruff>=0.5.0",
   "nox>=2024.4.15",
   "types-click",
+  "types-babel",
 ]
 
 [project.optional-dependencies]

@@ -33,12 +33,9 @@ def lint(session: nox.Session) -> None:
     session.run("ruff", "check", *LOCATIONS, *session.posargs)
 
 
-@nox.session
 def format(session: nox.Session) -> None:
-    """Auto-format with ruff (safe fixes)."""
     session.install("ruff>=0.5.0")
-    session.run("ruff", "format", *LOCATIONS, *session.posargs)
-    session.run("ruff", "check", "--fix", *LOCATIONS, *session.posargs)
+    session.run("ruff", "format", "--no-cache")
 
 
 @nox.session

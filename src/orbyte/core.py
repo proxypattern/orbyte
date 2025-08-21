@@ -99,8 +99,8 @@ class Orbyte:
             "chosen": str(res.chosen) if res.chosen else None,
         }
 
-    def list_identifiers(self) -> list[str]:
-        return self.resolver.list_identifiers()
+    def list_identifiers(self, *, recursive: bool = True) -> list[str]:
+        return self.resolver.list_identifiers(recursive=recursive)
 
     @staticmethod
     def parse_vars(value: str) -> dict:

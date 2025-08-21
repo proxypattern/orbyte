@@ -1,10 +1,18 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
 
 from .validation import assert_valid_identifier, normalize_locale
+
+# locale token like: en, es, en-US, zh-Hant, pt-BR, etc.
+_LOCALE_TOKEN = r"[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*"
+# filename stem with optional locale suffix: welcome.en, invoice.en-US, etc.
+_LOCALE_SUFFIX_RE = re.compile(rf"^(?P<base>.+?)\.(?P<loc>{_LOCALE_TOKEN})$")
+
+_EXCLUDED_DIRS = {".git", ".hg", ".svn", "__pycache__", ".venv", "venv"}
 
 
 @dataclass(frozen=True)
@@ -52,20 +60,39 @@ class PromptResolver:
                     return Resolution(identifier, loc, tuple(candidates), chosen)
         return Resolution(identifier, loc, tuple(candidates), chosen)
 
-    def list_identifiers(self) -> List[str]:
-        """List unique base identifiers found across search paths."""
-        seen = set()
+    def list_identifiers(self, *, recursive: bool = True) -> List[str]:
+        """
+        List unique base identifiers found across search paths.
+
+        - Returns identifiers with POSIX-style paths (e.g., "emails/welcome").
+        - Strips locale suffix from the *filename* only (e.g., "welcome.en" -> "welcome").
+        - If `recursive=False`, only looks in the top directory of each search path.
+        """
+        seen: set[str] = set()
+
         for base in self.search_paths:
             if not base.exists():
                 continue
-            for p in base.rglob("*.j2"):
-                # Strip .j2 and possible .<locale> suffix
-                stem = p.name[:-3]  # remove .j2
-                parts = stem.split(".")
-                if len(parts) >= 2 and len(parts[-1]) <= 10:
-                    # treat last segment as potential locale (like en, es, en-US)
-                    base_id = ".".join(parts[:-1])
-                else:
-                    base_id = stem
-                seen.add(base_id)
+
+            it = base.rglob("*.j2") if recursive else base.glob("*.j2")
+            for p in it:
+                rel = p.relative_to(base)
+
+                # skip hidden/excluded dirs
+                parts = rel.parts[:-1]  # parent dirs only
+                if any(part in _EXCLUDED_DIRS or part.startswith(".") for part in parts):
+                    continue
+
+                # remove .j2 and locale suffix from the *filename*
+                stem = p.stem
+                m = _LOCALE_SUFFIX_RE.match(stem)
+                base_name = m.group("base") if m else stem
+
+                # rebuild the identifier using parent dirs + base_name (POSIX separators)
+                parent = rel.parent
+                ident_path = (
+                    (parent / base_name) if str(parent) != "." else Path(base_name)
+                )
+                seen.add(ident_path.as_posix())
+
         return sorted(seen)
