@@ -45,7 +45,7 @@ def format(session: nox.Session) -> None:
 def types(session: nox.Session) -> None:
     """Type-check with mypy."""
     session.install("-e", ".[dev]")
-    session.run("mypy", "src", "tests", *session.posargs)
+    session.run("mypy", "src", "tests", *session.posargs, external=True)
 
 
 @nox.session

@@ -10,7 +10,9 @@ from orbyte import Orbyte
 from orbyte.exceptions import TemplateLookupError
 
 
-def write_template(base: Path, identifier: str, content: str, locale: str | None = None):
+def write_template(
+    base: Path, identifier: str, content: str, locale: str | None = None
+):
     name = f"{identifier}.{locale}.j2" if locale else f"{identifier}.j2"
     (base / name).write_text(content, encoding="utf-8")
 

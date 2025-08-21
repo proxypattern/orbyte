@@ -18,14 +18,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black mypy
-          pip install -e .
+          pip install ruff black mypy types-babel
+          pip install -e .[i18n,cache,dev]
       - name: Lint with ruff
         run: ruff check .
       - name: Check formatting with black
         run: black --check .
       - name: Type check with mypy
-        run: mypy orbyte.py tests
+        run: mypy src tests
 
   test:
     runs-on: ubuntu-latest
