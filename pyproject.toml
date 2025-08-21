@@ -36,7 +36,7 @@ addopts = [
 [tool.coverage.run]
 branch = true
 parallel = true
-source = ["src/orbyte", "orbyte.py"]
+source = ["src/orbyte"]
 omit = [
   "src/**/__init__.py",
   "src/**/__main__.py",
