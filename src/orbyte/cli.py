@@ -13,7 +13,8 @@ from .validation import OrbyteConfigError, assert_valid_paths
 
 
 app = typer.Typer(
-    add_completion=False, help="Filesystem-first prompt templating with locale fallback."
+    add_completion=False,
+    help="Filesystem-first prompt templating with locale fallback.",
 )
 
 
@@ -27,6 +28,7 @@ def _resolve_paths(prompts_paths: Optional[List[str]]) -> List[str]:
     assert_valid_paths(paths)
     return paths
 
+
 def _load_filters(filters_path: Optional[str]) -> Optional[Dict[str, object]]:
     if not filters_path:
         return None
@@ -38,11 +40,14 @@ def _load_filters(filters_path: Optional[str]) -> Optional[Dict[str, object]]:
     if "get_filters" in ns and callable(ns["get_filters"]):
         result = ns["get_filters"]()
         if not isinstance(result, dict):
-            raise OrbyteConfigError("get_filters() in filters module must return a dict.")
+            raise OrbyteConfigError(
+                "get_filters() in filters module must return a dict."
+            )
         return result
     raise OrbyteConfigError(
         "Filters file must define FILTERS dict or get_filters() -> dict."
     )
+
 
 def _load_translations(
     gettext_dir: Optional[str], locale: Optional[str], default_locale: str
@@ -52,8 +57,8 @@ def _load_translations(
     if not os.path.isdir(gettext_dir):
         raise OrbyteConfigError(f"--gettext-dir must be a directory: {gettext_dir}")
     try:
-        from babel.support import Translations
-    except Exception as e:
+        from babel.support import Translations  # type: ignore # noqa
+    except ImportError as e:
         raise OrbyteConfigError("Babel is not installed. Use: pip install Babel") from e
     use_locale = (locale or default_locale).replace("_", "-")
     return Translations.load(gettext_dir, [use_locale])
@@ -122,7 +127,9 @@ def list_cmd(
 
 @app.command()
 def explain(
-    identifier: str = typer.Argument(..., help="Template identifier (e.g., 'greeting')"),
+    identifier: str = typer.Argument(
+        ..., help="Template identifier (e.g., 'greeting')"
+    ),
     locale: Optional[str] = typer.Option(None, help="Locale (e.g., 'en', 'es')"),
     prompts_path: List[str] = typer.Option(
         None,
@@ -164,7 +171,9 @@ def explain(
 
 @app.command()
 def render(
-    identifier: str = typer.Argument(..., help="Template identifier (e.g., 'greeting')"),
+    identifier: str = typer.Argument(
+        ..., help="Template identifier (e.g., 'greeting')"
+    ),
     vars: Optional[str] = typer.Option("{}", help="JSON string or @file.json"),
     locale: Optional[str] = typer.Option(None, help="Locale (e.g., 'en', 'es')"),
     prompts_path: List[str] = typer.Option(

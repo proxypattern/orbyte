@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
@@ -10,7 +11,9 @@ from orbyte import Orbyte
 from orbyte.exceptions import TemplateLookupError
 
 
-def write_template(base: Path, identifier: str, content: str, locale: str | None = None):
+def write_template(
+    base: Path, identifier: str, content: str, locale: Optional[str] = None
+):
     name = f"{identifier}.{locale}.j2" if locale else f"{identifier}.j2"
     (base / name).write_text(content, encoding="utf-8")
 
@@ -63,7 +66,7 @@ def test_render_raises_when_no_matching_template(tmp_prompts_dir: Path):
         ob.render("missing_identifier", locale="en")
 
 
-def run_cli(cwd: str, args: list[str], env: dict | None = None):
+def run_cli(cwd: str, args: list[str], env: Optional[dict] = None):
     cmd = [sys.executable, "-m", "orbyte", *args]
     return subprocess.run(
         cmd,

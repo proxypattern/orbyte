@@ -12,17 +12,17 @@ try:
     # Available in jinja2; import lazily to avoid hard dependency on sandbox unless used
     from jinja2.sandbox import SandboxedEnvironment
 except Exception:  # pragma: no cover
-    SandboxedEnvironment = None  # type: ignore[assignment]
+    SandboxedEnvironment = None  # type: ignore # noqa
 
 try:
     from jinja2 import FileSystemBytecodeCache
 except Exception:  # pragma: no cover
-    FileSystemBytecodeCache = None  # type: ignore[misc]
+    FileSystemBytecodeCache = None  # type: ignore # noqa
 
 try:
-    from babel.support import Translations  # optional
-except Exception:  # pragma: no cover
-    Translations = object  # type: ignore[assignment]
+    from babel.support import Translations  # type: ignore # optional
+except ImportError:  # pragma: no cover
+    Translations = object  # type: ignore # noqa
 
 
 def create_env(
@@ -79,7 +79,20 @@ def create_env(
     # Optional i18n via gettext
     if translations is not None and translations is not object:
         env.add_extension("jinja2.ext.i18n")
-        env.install_gettext_translations(translations)
+        # Different Jinja2 versions use different methods
+        if hasattr(env, "install_gettext_translations"):
+            env.install_gettext_translations(translations)  # type: ignore # noqa
+        else:
+            # Handle different Jinja2 versions
+            try:
+                env.install_gettext_callables(  # type: ignore # noqa
+                    translations.ugettext, translations.ungettext, newstyle=True
+                )
+            except AttributeError:
+                # For newer Jinja2 versions
+                env.install_gettext_callables(  # type: ignore # noqa
+                    translations.gettext, translations.ngettext, newstyle=True
+                )
 
     # Optional extra filters
     if extra_filters:

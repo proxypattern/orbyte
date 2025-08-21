@@ -1,5 +1,7 @@
 # Orbyte
 
+[![CI](https://github.com/proxypattern/orbyte/actions/workflows/ci.yml/badge.svg)](https://github.com/proxypattern/orbyte/actions/workflows/ci.yml)
+
 Filesystem-first prompt templating with locale fallback, powered by **Jinja2**.
 
 * Simple file layout: `identifier[.locale].j2`
