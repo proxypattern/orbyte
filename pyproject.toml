@@ -17,8 +17,7 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools]
-py-modules = ["orbyte"]
+# Remove py-modules for src layout - packages.find handles this
 
 # Pytest + Coverage settings
 [tool.pytest.ini_options]
@@ -26,8 +25,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 addopts = [
   "-q",
-  "--cov=orbyte",
-  "--cov=orbyte.py",
+  "--cov=src/orbyte",
   "--cov-report=term-missing:skip-covered",
   "--cov-report=xml",
   "--cov-report=html"
