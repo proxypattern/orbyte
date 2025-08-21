@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [{ name = "ProxyPattern" }]
-dependencies = ["jinja2>=3.1", "typer>=0.12.0"]
+dependencies = ["jinja2>=3.1", "typer>=0.12.0", "click>=8.1.0,<8.2"]
 
 [project.scripts]
 orbyte = "orbyte.cli:main"
