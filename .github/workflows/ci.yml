@@ -71,8 +71,8 @@ jobs:
       - name: Run tests (pytest + coverage)
         shell: bash
         run: |
-          # Pytest picks up --cov settings from pyproject
-          pytest
+          # Run pytest with minimal coverage reporting for CI
+          pytest --cov=src/orbyte --cov-report=
           # Debug: show what coverage files were created
           echo "Coverage files after pytest:"
           ls -la .coverage* || echo "No .coverage* files found after pytest"
@@ -94,11 +94,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.python-version }}
-          path: |
-            .coverage*.py${{ matrix.python-version }}
-            coverage.xml
-            htmlcov
-          if-no-files-found: warn
+          path: .coverage*.py${{ matrix.python-version }}
+          if-no-files-found: error
           retention-days: 7
 
   coverage:
@@ -131,7 +128,7 @@ jobs:
             exit 1
           fi
           coverage combine
-          coverage report -m
+          coverage report -m --fail-under=90
           coverage html
           coverage xml
 
