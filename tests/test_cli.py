@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Optional
 from typer.testing import CliRunner
 
 import pytest
@@ -11,7 +12,7 @@ runner = CliRunner()
 
 
 def write_template(
-    base: Path, identifier: str, content: str, locale: str | None = None
+    base: Path, identifier: str, content: str, locale: Optional[str] = None
 ):
     name = f"{identifier}.{locale}.j2" if locale else f"{identifier}.j2"
     (base / name).write_text(content, encoding="utf-8")

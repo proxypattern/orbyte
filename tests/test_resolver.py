@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import pytest
 
@@ -8,7 +8,7 @@ from orbyte.validation import OrbyteConfigError
 
 
 def write_template(
-    base: Path, identifier: str, content: str, locale: str | None = None
+    base: Path, identifier: str, content: str, locale: Optional[str] = None
 ):
     """Helper to create template files."""
     name = f"{identifier}.{locale}.j2" if locale else f"{identifier}.j2"
