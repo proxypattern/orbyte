@@ -1,23 +1,48 @@
 [project]
 name = "orbyte"
 version = "0.1.0"
-description = "Add your description here"
+description = "Filesystem-first prompt templating with locale fallback, powered by Jinja2"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [{ name = "ProxyPattern" }]
-dependencies = ["jinja2>=3.1", "typer>=0.12.0", "click>=8.1.0,<8.2"]
+license = "MIT"
 
 [project.scripts]
 orbyte = "orbyte.cli:main"
 
 [build-system]
-requires = ["setuptools>=69", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.poetry]
+name = "orbyte"
+version = "0.1.0"
+description = "Filesystem-first prompt templating with locale fallback, powered by Jinja2"
+license = "MIT"
+authors = ["ProxyPattern"]
+readme = "README.md"
+packages = [{ include = "orbyte", from = "src" }]
 
-# Remove py-modules for src layout - packages.find handles this
+[tool.poetry.dependencies]
+python = ">=3.9"
+jinja2 = ">=3.1"
+typer = ">=0.12.0"
+click = ">=8.1.0,<8.2"
+babel = {version = ">=2.15", optional = true}
+diskcache = {version = ">=5.6", optional = true}
+
+[tool.poetry.extras]
+i18n = ["babel"]
+cache = ["diskcache"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8"
+pytest-cov = ">=5"
+mypy = ">=1.10"
+ruff = ">=0.5.0"
+nox = ">=2024.4.15"
+types-click = "*"
+types-babel = "*"
 
 # Pytest + Coverage settings
 [tool.pytest.ini_options]
