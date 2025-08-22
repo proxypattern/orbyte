@@ -17,7 +17,7 @@ Filesystem-first prompt templating with locale fallback, powered by **Jinja2**.
 
 With uv (recommended):
 ```bash
-uv sync --group dev --dev
+uv sync --extra dev --extra i18n --extra cache
 ```
 
 With pip:
@@ -287,7 +287,7 @@ git clone https://github.com/proxypattern/orbyte
 cd orbyte
 
 # install
-uv sync --group dev --dev
+uv sync --extra dev --extra i18n --extra cache
 
 # quality gate
 ruff check .
