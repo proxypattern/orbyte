@@ -1,23 +1,36 @@
 [project]
 name = "orbyte"
 version = "0.1.0"
-description = "Add your description here"
+description = "Filesystem-first prompt templating with locale fallback, powered by Jinja2"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [{ name = "ProxyPattern" }]
-dependencies = ["jinja2>=3.1", "typer>=0.12.0", "click>=8.1.0,<8.2"]
+license = "MIT"
+dependencies = [
+    "jinja2>=3.1",
+    "typer>=0.12.0",
+    "click>=8.1.0,<8.2",
+]
 
 [project.scripts]
 orbyte = "orbyte.cli:main"
 
+[project.optional-dependencies]
+i18n = ["babel>=2.15"]
+cache = ["diskcache>=5.6"]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "mypy>=1.10",
+    "ruff>=0.5.0",
+    "nox>=2024.4.15",
+    "types-click",
+    "types-babel",
+]
+
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-# Remove py-modules for src layout - packages.find handles this
 
 # Pytest + Coverage settings
 [tool.pytest.ini_options]
@@ -73,18 +86,3 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 docstring-code-format = true
-
-[dependency-groups]
-dev = [
-  "pytest>=8",
-  "pytest-cov>=5",
-  "mypy>=1.10",
-  "ruff>=0.5.0",
-  "nox>=2024.4.15",
-  "types-click",
-  "types-babel",
-]
-
-[project.optional-dependencies]
-i18n = ["Babel>=2.15"]
-cache = ["diskcache>=5.6"]

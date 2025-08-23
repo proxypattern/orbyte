@@ -15,8 +15,18 @@ Filesystem-first prompt templating with locale fallback, powered by **Jinja2**.
 
 **Local dev:**
 
+With uv (recommended):
 ```bash
-pip install -e .[dev]
+uv sync --extra dev --extra i18n --extra cache
+```
+
+With pip:
+```bash
+pip install -e .
+```
+Then install dev dependencies separately:
+```bash
+pip install pytest pytest-cov mypy ruff nox types-click types-babel
 ```
 
 **From GitHub:**
@@ -270,13 +280,30 @@ nox -s build
 
 ## Development
 
+With uv (recommended):
 ```bash
 # clone
 git clone https://github.com/proxypattern/orbyte
 cd orbyte
 
 # install
-pip install -e .[dev]
+uv sync --extra dev --extra i18n --extra cache
+
+# quality gate
+ruff check .
+mypy src tests
+pytest -q
+```
+
+With pip:
+```bash
+# clone
+git clone https://github.com/proxypattern/orbyte
+cd orbyte
+
+# install
+pip install -e .
+pip install pytest pytest-cov mypy ruff nox types-click types-babel
 
 # quality gate
 ruff check .
